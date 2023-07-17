@@ -1,0 +1,10 @@
+version: '3'
+services:
+  soar_python_executor:
+    build: .
+    container_name: soar-python-executor-container
+    ports:
+      - "9999:8080"
+    volumes:
+      - ./app/:/app
+  
