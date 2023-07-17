@@ -23,7 +23,6 @@ async def root(request: Request):
    resp.customCodeResponse.input = request.customCodeRequest
    resp.customCodeResponse.language = request.customCodeRequest.language
    resp.customCodeResponse.requestId = request.requestId
-   
    try:
       logging.info("invoked %s", "/execute/python")
       absFile = getPythonFile(request.customCodeRequest.code)
@@ -40,6 +39,8 @@ async def root(request: Request):
       logging.error("Exception while executing cusome code %s", ex)
       resp.customCodeResponse.status = "Failed"
       resp.customCodeResponse.message = str(ex)
+      if os.path.exists(absFile):
+         os.remove(absFile)
    return resp
 
 def executeScript(scriptPath: str, codeReq: CodeRequest, codeResp: CodeResponse):
