@@ -8,13 +8,9 @@ import os
 import logging
 from importlib.machinery import SourceFileLoader
 
-
-
 logging.basicConfig(filename = 'app.log', level = logging.INFO, format = '%(levelname)s:%(asctime)s:%(message)s')
 
-
 app = FastAPI()
-
 
 @app.post("/execute/python")
 async def root(request: Request):
@@ -30,17 +26,15 @@ async def root(request: Request):
       # code to execute file
       logging.debug("Executing python script")
       executeScript(absFile, request.customCodeRequest, resp.customCodeResponse)
-      
-      # delete the creaed python file
-      logging.info("Python script execution completed, deleting script file")
-      os.remove(absFile)
-      logging.info("script file deleted")
+      logging.info("Python script execution completed")
    except Exception as ex:
       logging.error("Exception while executing cusome code %s", ex)
       resp.customCodeResponse.status = "Failed"
       resp.customCodeResponse.message = str(ex)
+   finally:
       if os.path.exists(absFile):
          os.remove(absFile)
+         logging.info("script file deleted")
    return resp
 
 def executeScript(scriptPath: str, codeReq: CodeRequest, codeResp: CodeResponse):
