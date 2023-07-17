@@ -1,9 +1,11 @@
 from pydantic import BaseModel
+from .request import Request
 
 class CodeResponse(BaseModel):
-    language:str
-    requestId:str
-    status:str
-    message:str
-    input:dict
-    output:dict
+    language:str = None
+    requestId:str = None
+    status:str = None
+    message:str = None
+    input:dict = None
+    output:dict = None
+    
