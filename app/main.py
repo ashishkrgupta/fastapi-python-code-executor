@@ -1,12 +1,10 @@
 from fastapi import FastAPI
-from .model.request import Request
-from .model.response import Response
-from .model.codeResponse import CodeResponse
-from .model.codeRequest import CodeRequest
-import uuid
-import os
 import logging
-from importlib.machinery import SourceFileLoader
+from .soar.model.request import Request
+from .soar.model.response import Response
+from .soar.model.codeResponse import CodeResponse
+from .soar.service.codeExecutionService import CodeExecutionService
+from .soar.service.codeFileService import CodeFileService
 
 logging.basicConfig(filename = 'app.log', level = logging.INFO, format = '%(levelname)s:%(asctime)s:%(message)s')
 
@@ -16,45 +14,25 @@ app = FastAPI()
 async def root(request: Request):
    resp = Response()
    resp.customCodeResponse = CodeResponse()
-   resp.customCodeResponse.input = request.customCodeRequest
+   resp.customCodeResponse.input = request.customCodeRequest.__dict__
    resp.customCodeResponse.language = request.customCodeRequest.language
    resp.customCodeResponse.requestId = request.requestId
+   codeFile = CodeFileService()
+   absFile = ""
    try:
       logging.info("invoked %s", "/execute/python")
-      absFile = getPythonFile(request.customCodeRequest.code)
+      absFile = codeFile.getPythonFile(request.customCodeRequest.code)
       logging.info("script file created by name %s", absFile)
       # code to execute file
       logging.debug("Executing python script")
-      executeScript(absFile, request.customCodeRequest, resp.customCodeResponse)
+      exeService = CodeExecutionService()
+      exeService.executeScript(absFile, request.customCodeRequest, resp.customCodeResponse)
       logging.info("Python script execution completed")
    except Exception as ex:
       logging.error("Exception while executing cusome code %s", ex)
       resp.customCodeResponse.status = "Failed"
       resp.customCodeResponse.message = str(ex)
    finally:
-      if os.path.exists(absFile):
-         os.remove(absFile)
-         logging.info("script file deleted")
+      codeFile.removeFile(absFile)
    return resp
 
-def executeScript(scriptPath: str, codeReq: CodeRequest, codeResp: CodeResponse):
-   module_name=scriptPath.split("/")[-1].split(".")[0]
-   load_module = SourceFileLoader(module_name, scriptPath).load_module()
-   method = getattr(load_module, codeReq.invokefunction)
-   result = method(*codeReq.input)
-   codeResp.output = result
-   codeResp.message = "Execution Successful"
-   codeResp.status = "success"
-
-def getPythonFile(code: str):
-   createScriptsFolder()
-   filename = "scripts/" + str(uuid.uuid4()) + ".py"
-   file = open(filename, 'a')
-   file.write(code)
-   file.close()
-   return os.path.abspath(filename)
-
-
-def createScriptsFolder():
-   if not os.path.exists("scripts"):
-      os.mkdir("scripts")
