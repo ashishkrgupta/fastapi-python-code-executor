@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 import logging
-from .soar.model.request import Request
-from .soar.model.response import Response
-from .soar.model.codeResponse import CodeResponse
-from .soar.service.codeExecutionService import CodeExecutionService
-from .soar.service.codeFileService import CodeFileService
+from .pce.model.request import Request
+from .pce.model.response import Response
+from .pce.model.codeResponse import CodeResponse
+from .pce.service.codeExecutionService import CodeExecutionService
+from .pce.service.codeFileService import CodeFileService
 
 logging.basicConfig(filename = 'app.log', level = logging.INFO, format = '%(levelname)s:%(asctime)s:%(message)s')
 
