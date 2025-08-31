@@ -36,3 +36,9 @@ async def root(request: Request):
       codeFile.removeFile(absFile)
    return resp
 
+
+
+
+@app.get("/")
+async def root():
+    return {"message": "Hello World"}
